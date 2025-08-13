@@ -1,0 +1,22 @@
+{% extends "admin/index.html" %}
+
+{% block content %}
+    {{ block.super }}
+    <div class="app-canteen module">
+        <table>
+            <caption>
+                <a href="{% url 'admin:canteen_reports' %}" class="section"
+                   style="color: #fff; font-weight: bold;">
+                    📊 Reports
+                </a>
+            </caption>
+            <tbody>
+                <tr>
+                    <td>
+                        <a href="{% url 'admin:canteen_reports' %}">View Canteen Reports</a>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+{% endblock %}

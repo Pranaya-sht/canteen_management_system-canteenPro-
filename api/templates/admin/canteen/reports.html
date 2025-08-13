@@ -1,0 +1,181 @@
+{% extends "admin/base_site.html" %}
+{% load static %}
+
+{% block extrastyle %}
+  <style>
+    body {
+      color: #000;
+    }
+    h1, h2 {
+      color: #000;
+      font-weight: 600;
+    }
+    .kpi-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 16px;
+      margin-top: 10px;
+    }
+    .kpi-card {
+      background: #ffffff;
+      border-radius: 12px;
+      padding: 16px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+      border: 1px solid #ddd;
+      text-align: center;
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+    .kpi-card:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(0,0,0,0.12);
+    }
+    .kpi-title {
+      font-size: 13px;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      color: #555;
+    }
+    .kpi-value {
+      font-size: 22px;
+      font-weight: 700;
+      margin-top: 6px;
+      color: #000;
+    }
+    .filter-form {
+      margin: 14px 0 20px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      align-items: center;
+      background: #fff;
+      padding: 12px 16px;
+      border-radius: 10px;
+      border: 1px solid #ddd;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.05);
+    }
+    .filter-form label {
+      font-weight: 500;
+      color: #000;
+    }
+    .filter-form input[type="date"] {
+      padding: 5px 8px;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+    }
+    .filter-form button {
+      padding: 6px 14px;
+      background: #007bff;
+      color: #fff;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      font-weight: 600;
+    }
+    .filter-form button:hover {
+      background: #0064d2;
+    }
+    .chart-wrap {
+      background: #ffffff;
+      border: 1px solid #ddd;
+      border-radius: 12px;
+      padding: 18px;
+      margin-top: 18px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+    }
+    .chart-wrap h2 {
+      font-size: 16px;
+      margin-bottom: 12px;
+    }
+  </style>
+{% endblock %}
+
+{% block content %}
+  <h1>Canteen Business Reports</h1>
+
+  <form method="get" class="filter-form">
+    <label>From: <input type="date" name="start" value="{{ start_date }}"></label>
+    <label>To: <input type="date" name="end" value="{{ end_date }}"></label>
+    <button type="submit">Apply</button>
+  </form>
+
+  <div class="kpi-grid">
+    <div class="kpi-card">
+      <div class="kpi-title">Total Sales</div>
+      <div class="kpi-value">₹ {{ kpis.total_sales|floatformat:2 }}</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-title">COGS</div>
+      <div class="kpi-value">₹ {{ kpis.total_cogs|floatformat:2 }}</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-title">Gross Profit</div>
+      <div class="kpi-value">₹ {{ kpis.gross_profit|floatformat:2 }}</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-title">Expenses</div>
+      <div class="kpi-value">₹ {{ kpis.total_expenses|floatformat:2 }}</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-title">Net Profit</div>
+      <div class="kpi-value">₹ {{ kpis.net_profit|floatformat:2 }}</div>
+    </div>
+  </div>
+
+  <div class="chart-wrap">
+    <h2>Sales vs Expenses</h2>
+    <canvas id="salesExpensesChart" height="110"></canvas>
+  </div>
+
+  <div class="chart-wrap">
+    <h2>P&L (Gross & Net)</h2>
+    <canvas id="plChart" height="110"></canvas>
+  </div>
+{% endblock %}
+
+{% block extrahead %}
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+  <script>
+    const labels = {{ labels|safe }};
+    const sales = {{ series.sales|safe }};
+    const cogs = {{ series.cogs|safe }};
+    const expenses = {{ series.expenses|safe }};
+    const gross = {{ series.gross|safe }};
+    const net = {{ series.net|safe }};
+
+    document.addEventListener('DOMContentLoaded', () => {
+      // Chart 1: Sales vs Expenses
+      new Chart(document.getElementById('salesExpensesChart'), {
+        type: 'bar',
+        data: {
+          labels,
+          datasets: [
+            { label: 'Sales', data: sales, backgroundColor: '#4cafef' },
+            { label: 'Expenses', data: expenses, backgroundColor: '#f87171' },
+          ]
+        },
+        options: {
+          responsive: true,
+          plugins: { legend: { position: 'top' } },
+          scales: { y: { beginAtZero: true } }
+        }
+      });
+
+      // Chart 2: P&L
+      new Chart(document.getElementById('plChart'), {
+        type: 'line',
+        data: {
+          labels,
+          datasets: [
+            { label: 'Gross Profit', data: gross, borderColor: '#22c55e', fill: false },
+            { label: 'Net Profit', data: net, borderColor: '#6366f1', fill: false },
+          ]
+        },
+        options: {
+          responsive: true,
+          plugins: { legend: { position: 'top' } },
+          scales: { y: { beginAtZero: true } }
+        }
+      });
+    });
+  </script>
+{% endblock %}
